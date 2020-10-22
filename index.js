@@ -202,7 +202,6 @@ app.route('/jugador/:user')
             }
         }
         res.send(respuesta);
-
     });
 
 app.get('/hola', function (req, res) {
