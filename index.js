@@ -96,7 +96,7 @@ app.route('/jugador/:user')
         var playerRank = req.body.posicio || '';
         respuesta.error = false;
 
-        if (playerName == '' || playerSurname == '' || parseInt(playerScore) <= 0 || playerNick == '' || playerRank == '')
+        if (playerName == '' || playerSurname == '' || parseInt(playerScore) <= 0 || playerScore == '' || playerNick == '' || playerRank == '')
         {
             respuesta = {
                 error: true,
