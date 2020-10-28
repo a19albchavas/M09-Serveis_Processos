@@ -93,10 +93,9 @@ app.route('/jugador/:user')
         var playerSurname = req.body.congnom || '';
         var playerScore = req.body.score || '';
         var playerNick = req.body.alies || '';
-        var playerRank = req.body.posicio || '';
         respuesta.error = false;
 
-        if (playerName == '' || playerSurname == '' || parseInt(playerScore) <= 0 || playerScore == '' || playerNick == '' || playerRank == '')
+        if (playerName == '' || playerSurname == '' || parseInt(playerScore) <= 0 || playerScore == '' || playerNick == '')
         {
             respuesta = {
                 error: true,
@@ -128,7 +127,6 @@ app.route('/jugador/:user')
             {
                 jugadores.push(
                     {
-                        posicio: playerRank,
                         alies: playerNick,
                         nom: playerName,
                         congnom: playerSurname,
