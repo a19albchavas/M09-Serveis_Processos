@@ -1,211 +1,133 @@
 const express = require("express");
-const app = express();
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
+const app = express()
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-app.use(bodyParser.urlencoded({ extended : false }));
-app.use(bodyParser.json())
+let code100 = { code: 100, error: false, message: '2-DAMVI Server Up' };
+let code200 = { code: 200, error: false, message: 'Player Exists' };
+let code201 = { code: 201, error: false, message: 'Player Correctly Created' };
+let code202 = { code: 201, error: false, message: 'Player Correctly Updated' };
+let codeError502 = { code: 503, error: true, message: 'The field: name, surname, score are mandatories (the score value has to be >0)' };
+let codeError503 = { code: 503, error: true, message: 'Error: Player Exists' };
+let codeError504 = { code: 504, error: true, message: 'Error: Player not found' };
 
-let jugador = {
-    posicio: '',
-    alies: '',
-    nombre: '',
-    apellido: '',
-    score: ''
-};
-
-let jugadores = [{
-    posicio: 3,
-    alies: "jperez",
-    nom: "Jose",
-    congnom: "Perez",
-    score: 1000
-},
-{
-    posicio: 1,
-    alies: "jsanz",
-    nom: "Juan",
-    congnom: "Sanz",
-    score: 950
-},
-{
-    posicio: 1,
-    alies: "mgutierrez",
-    nom: "Maria",
-    congnom: "Gutierrez",
-    score: 850
-}
+var players = [
+    { position: "1", alias: "jperez", name: "Jose", surname: "Perez", score: 1000, created: "2020-11-03T15:20:21.377Z"},
+    { position: "2", alias: "jsanz", name: "Juan", surname: "Sanz", score: 950, created: "2020-11-03T15:20:21.377Z" },
+    { position: "3", alias: "mgutierrez", name: "Maria", surname: "Gutierrez", score: 850, created: "2020-11-03T15:20:21.377Z" }
 ];
 
-let respuesta = {
-    error: false,
-    codigo: 200,
-    mensaje: ''
+function UpdateRanking() {
+    //Order the ranking
+    players.sort((a, b) => (a.score <= b.score) ? 1 : -1);
+
+    //Position Update
+    for (x = 0; x < players.length; x++) {
+        players[x].position = x + 1;
+    }
 };
 
-
-app.get('/', function (req, res)
-{
-    respuesta = {
-        error: false,
-        codigo: 200,
-        mensaje: 'Mensaje de prueba satisfactorio.'
-    }
-    res.send(respuesta);
+app.get('/', function (req, res) {
+    //code funciona ok
+    res.send(code100);
 });
 
-app.get('/ranking', function (req, res)
-{
-    jugadores.sort((a, b) => (a.score < b.score ? 1:-1));
-    for (i = 0; i < jugadores.length; i++)
-    {
-        jugadores[i].posicio = i + 1;
-    }
-    res.send(jugadores);
+app.get('/ranking', function (req, res) {
+    let ranking = { namebreplayers: players.length, players: players };
+    res.send(ranking);
 });
 
-app.route('/jugador/:user')
-    .get(function (req, res)
-    {
-        respuesta.error = true;
-        for (var i = 0; i < jugadores.length; i++)
-        {
-            if (jugadores[i].alies == req.params.user)
-            {
-                res.send(jugadores[i]);
-                respuesta.error = false;
-            }
-        }
-        if (respuesta.error == true)
-        {
-            respuesta = {
-                error: true,
-                codigo: 504,
-                mensaje: "El jugador no existeix encara"
-            }
-            res.send(respuesta);
-        }
-    })
+app.get('/players/:alias', function (req, res) {
+    //Player Search
+    var index = players.findIndex(j => j.alias === req.params.alias);
 
-    .post(function (req, res)
-    {
-        var playerName = req.body.nom || '';
-        var playerSurname = req.body.congnom || '';
-        var playerScore = req.body.score || '';
-        var playerNick = req.body.alies || '';
-        respuesta.error = false;
+    if (index >= 0) {
+        //Player exists
+        response = code200;
+        response.jugador = players[index];
+    } else {
+        //Player doesn't exists
+        response = codeError504;
+    }
+    res.send(response);
+});
 
-        if (playerName == '' || playerSurname == '' || parseInt(playerScore) <= 0 || playerScore == '' || playerNick == '')
-        {
-            respuesta = {
-                error: true,
-                codigo: 502,
-                mensaje: 'Es necessiten tots els valors de nom, cognom, puntuació (sempre positiva), alies i la posició'
-            };
-        } 
-        else if (playerNick != req.params.user) {
-            respuesta = {
-                error: true,
-                codigo: 506,
-                mensaje: "L'àlies és incorrecte"
-            };
-        } 
-        else 
-        {
-            for (var i = 0; i < jugadores.length ; i++)
-            {
-                if ((jugadores[i].nom == playerName) && (jugadores[i].congnom == playerSurname) && (jugadores[i].alies == playerNick)) 
-                {
-                    respuesta = {
-                        Codi: 503,
-                        error: true,
-                        mensaje: "El jugador ja existeix"
-                    };
-                }
-            }
-            if(!respuesta.error)
-            {
-                jugadores.push(
-                    {
-                        alies: playerNick,
-                        nom: playerName,
-                        congnom: playerSurname,
-                        score: playerScore
-                    }
-                ) 
-    
-                respuesta = {
-                    codigo: 200,                 
-                    error: false,                
-                    mensaje: 'Jugador creat',   
-                    respuesta: jugadores[jugadores.length - 1]          
-                };
-            }
+app.post('/players/:alias', function (req, res) {
+    var paramAlias = req.params.alias || '';
+    var paramName = req.body.name || '';
+    var paramSurname = req.body.surname || '';
+    var paramScore = req.body.score || '';
+
+    if (paramAlias === '' || paramName === '' || paramSurname === '' || parseInt(paramScore) <= 0 || paramScore === '') {
+        response = codeError502;
+    } else {
+        //Player Search
+        var index = players.findIndex(j => j.alias === paramAlias)
+
+        if (index != -1) {
+            //Player allready exists
+            response = codeError503;
+        } else {
+            //Add Player
+            players.push({ 
+                position: '', 
+                alias: paramAlias, 
+                name: paramName, 
+                surname: paramSurname, 
+                score: paramScore ,
+                created: new Date()
+            });
+            //Sort the ranking
+            UpdateRanking();
+            //Search Player Again
+            index = players.findIndex(j => j.alias === paramAlias);
+            //Response return
+            response = code201;
+            response.player = players[index];
         }
-        res.send(respuesta);
-    })
-    .put(function (req, res)
-    {
-        var playerName = req.body.nom || '';
-        var playerSurname = req.body.congnom || '';
-        var playerScore = req.body.score || '';
-        var playerNick = req.body.alies || '';
-        var playerRank = req.body.posicio || '';
-        respuesta.error = false;
+    }
+    res.send(response);
+});
 
-        if (playerName == '' || playerSurname == '' || parseInt(playerScore) <= 0 || playerScore == '' || playerNick == '' || playerRank == '')
-        {
-            respuesta = {
-                error: true,
-                codigo: 502,
-                mensaje: 'Es necessiten tots els valors de nom, cognom, puntuació (sempre positiva), alies i la posició'
+app.put('/players/:alias', function (req, res) {
+    var paramalias = req.params.alias || '';
+    var paramname = req.body.name || '';
+    var paramsurname = req.body.surname || '';
+    var paramScore = req.body.score || '';
+
+    if (paramalias === '' || paramname === '' || paramsurname === '' || parseInt(paramScore) <= 0 || paramScore === '') {
+        response = codeError502; //Paràmetres incomplerts
+    } else {
+        //Player Search
+        var index = players.findIndex(j => j.alias === paramalias)
+
+        if (index != -1) {
+            //Update Player
+            players[index] = { 
+                position: '', 
+                alias: paramalias, 
+                name: paramname, 
+                surname: paramsurname, 
+                score: paramScore,
+                created:  players[index].created,
+                updated: new Date()
             };
-        } 
-        else if (playerNick != req.params.user) {
-            respuesta = {
-                error: true,
-                codigo: 504,
-                mensaje: "El jugador no existeix encara"
-            };
-        } 
-        else 
-        {
-            for (var i = 0; i < jugadores.length ; i++)
-            {
-                if ((jugadores[i].nom == playerName) && (jugadores[i].congnom == playerSurname) && (jugadores[i].alies == playerNick)) 
-                {
-                    jugadores[i] = {
-                        posicio: playerRank,
-                        alies: playerNick,
-                        nom: playerName,
-                        congnom: playerSurname,
-                        score: playerScore
-                    };
-                    respuesta = {
-                        error: false,
-                        codigo: 505,
-                        mensaje: 'Jugador actualitzat',
-                        respuesta: jugadores[i]
-                    };
-                    respuesta.error = true;
-                }
-            }
-            if(!respuesta.error)
-            {
-                respuesta = {
-                    error: true,
-                    codigo: 504,
-                    mensaje: 'El jugador no existeix'
-                };
-            }
+            //Sort the ranking
+            UpdateRanking();
+            //Search Player Again
+            index = players.findIndex(j => j.alias === paramalias);
+            //Response return
+            response = code202;
+            response.jugador = players[index];
+        } else {
+            response = codeError504;
         }
-        res.send(respuesta);
-    });
-
-app.get('/hola', function (req, res) {
-    res.send('[GET]Hola');
+    }
+    res.send(response);
 });
 
 app.listen(3000, () => {
-    console.log("El sevidor está inicializado en el puerto 3000.");
+    console.log("El servidor está inicializado en el puerto 3000");
 });
