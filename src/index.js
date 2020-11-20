@@ -1,6 +1,19 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express()
+const swaggerUi = require('swagger-ui-express');
+const swaggerJSDoc = require('swagger-jsdoc');
+
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title : 'Swagger Express API',
+            version : '1.0.0'
+        },
+    },
+    apis: ['./api.js']
+};
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
