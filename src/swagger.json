@@ -1,0 +1,273 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "",
+    "version" : "1.0.0",
+    "title" : "NodePlayers"
+  },
+  "paths" : {
+    "/" : {
+      "get" : {
+        "tags" : [ "Servidor" ],
+        "summary" : "Estat servidor",
+        "description" : "Diu l'estat del servidor",
+        "parameters" : [ ],
+        "responses" : {
+          "100" : {
+            "description" : "Pantalla inicial",
+            "schema" : {
+              "$ref" : "#/definitions/code100"
+            }
+          }
+        }
+      }
+    },
+    "/players/{alias}" : {
+      "parameters" : [ {
+        "name" : "alias",
+        "in" : "path",
+        "required" : true,
+        "description" : "Alies del jugador que volem veure",
+        "type" : "string"
+      } ],
+      "get" : {
+        "tags" : [ "Mostrar jugadors" ],
+        "summary" : "Mostra jugador",
+        "description" : "Mostra un jugador determinat",
+        "parameters" : [ {
+          "name" : "alias",
+          "in" : "path",
+          "description" : "L'alies del jugador",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Jugador existent",
+            "schema" : {
+              "$ref" : "#/definitions/code200"
+            }
+          },
+          "504" : {
+            "description" : "Jugador no trobat",
+            "schema" : {
+              "$ref" : "#/definitions/codeError504"
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Crear jugadors" ],
+        "summary" : "Crear jugador",
+        "description" : "Crear un nou jugador",
+        "parameters" : [ {
+          "name" : "Player",
+          "in" : "body",
+          "description" : "Jugador que volem crear",
+          "schema" : {
+            "$ref" : "#/definitions/Player"
+          }
+        } ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "New Player is created",
+            "schema" : {
+              "$ref" : "#/definitions/Player"
+            }
+          },
+          "201" : {
+            "description" : "Player Created",
+            "schema" : {
+              "$ref" : "#/definitions/code201"
+            }
+          },
+          "502" : {
+            "description" : "The field; name, surname, score are mandatories (the score value has to be >0)",
+            "schema" : {
+              "$ref" : "#/definitions/codeError502"
+            }
+          },
+          "503" : {
+            "description" : "Player Exists",
+            "schema" : {
+              "$ref" : "#/definitions/codeError503"
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Editar jugadors" ],
+        "summary" : "Editar un jugador",
+        "description" : "Editar un jugador",
+        "parameters" : [ {
+          "name" : "Player",
+          "in" : "body",
+          "description" : "El jugador que volem actualitzar",
+          "schema" : {
+            "$ref" : "#/definitions/Player"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "El jugador existeix",
+            "schema" : {
+              "$ref" : "#/definitions/Player"
+            }
+          },
+          "202" : {
+            "description" : "El jugador ha estat actualitzat",
+            "schema" : {
+              "$ref" : "#/definitions/code202"
+            }
+          },
+          "502" : {
+            "description" : "The field; name, surname, score are mandatories (the score value has to be >0)",
+            "schema" : {
+              "$ref" : "#/definitions/codeError502"
+            }
+          },
+          "504" : {
+            "description" : "Error. Jugador no trobat",
+            "schema" : {
+              "$ref" : "#/definitions/codeError504"
+            }
+          }
+        }
+      }
+    },
+    "/ranking" : {
+      "get" : {
+        "tags" : [ "Mostrar jugadors" ],
+        "summary" : "Mostrar jugadors",
+        "description" : "Mostrar tots els jugadors ordenats",
+        "parameters" : [ ],
+        "responses" : {
+          "400" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "position" : {
+                  "type" : "integer",
+                  "example" : 1
+                },
+                "alias" : {
+                  "type" : "string",
+                  "example" : "Username",
+                  "description" : "Username del jugador"
+                },
+                "name" : {
+                  "type" : "string",
+                  "example" : "Albert",
+                  "description" : "Nom del jugador"
+                },
+                "surname" : {
+                  "type" : "string",
+                  "example" : "Chao",
+                  "description" : "Cognom del jugador"
+                },
+                "score" : {
+                  "type" : "integer",
+                  "example" : 200
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "Player" : {
+      "required" : [ "nom", "cognom", "puntuacio" ],
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "uniqueItems" : true
+        },
+        "surname" : {
+          "type" : "string"
+        },
+        "score" : {
+          "type" : "integer"
+        }
+      },
+      "example" : {
+        "name" : "Albert",
+        "surname" : "Chao",
+        "score" : 10
+      }
+    },
+    "code100" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "2-DAMVI servidor actiu",
+          "description" : "Servidor actiu"
+        }
+      }
+    },
+    "code200" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "El jugador existeix",
+          "description" : "El jugador existeix"
+        }
+      }
+    },
+    "code201" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "Jugador creat",
+          "description" : "El jugador ha estat creat"
+        }
+      }
+    },
+    "code202" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "Jugador actualitzat",
+          "description" : "El jugador ha estat actualitzat"
+        }
+      }
+    },
+    "codeError502" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "The field; name, surname, score are mandatories (the score value has to be >0)",
+          "description" : "The field; name, surname, score are mandatories (the score value has to be >0)"
+        }
+      }
+    },
+    "codeError503" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "Error. Jugador no existent",
+          "description" : "El jugador no existeix"
+        }
+      }
+    },
+    "codeError504" : {
+      "type" : "object",
+      "properties" : {
+        "status" : {
+          "type" : "integer",
+          "example" : "Error. Jugador no trobat",
+          "description" : "El jugador no s'ha trobat"
+        }
+      }
+    }
+  }
+}
